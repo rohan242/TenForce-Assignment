@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Test_Taste_Console_Application.Constants;
 using Test_Taste_Console_Application.Domain.Objects;
@@ -184,6 +184,51 @@ namespace Test_Taste_Console_Application.Domain.Services
                 1                   |0.0f
                 --------------------+--------------------------------------------------
             */
+        }
+
+        public void OutputAllPlanetsAndTheirAverageMoonTemperatureToConsole()
+        {
+            var planets = _planetService.GetAllPlanets().ToArray();
+            if (!planets.Any())
+            {
+                Console.WriteLine(OutputString.NoPlanetsFound);
+                return;
+            }
+
+            var planetsWithMoons = planets.Where(planet => planet.HasMoons()).ToArray();
+            if (!planetsWithMoons.Any())
+            {
+                Console.WriteLine(OutputString.NoPlanetsWithMoonsFound);
+                return;
+            }
+
+            var columnSizes = new[] { 20, 40 };
+            var columnLabels = new[]
+            {
+                OutputString.PlanetId, OutputString.PlanetMoonAverageTemperature
+            };
+
+            ConsoleWriter.CreateHeader(columnLabels, columnSizes);
+
+            foreach (var planet in planetsWithMoons)
+            {
+                var averageTemperature = planet.AverageMoonTemperature;
+
+                var averageTemperatureDisplay = averageTemperature.HasValue
+                    ? $"{averageTemperature.Value:0.##} K"
+                    : "-";
+
+                ConsoleWriter.CreateText(
+                    new string[]
+                    {
+                        CultureInfoUtility.TextInfo.ToTitleCase(planet.Id),
+                        averageTemperatureDisplay
+                    },
+                    columnSizes);
+            }
+
+            ConsoleWriter.CreateLine(columnSizes);
+            ConsoleWriter.CreateEmptyLines(2);
         }
     }
 }

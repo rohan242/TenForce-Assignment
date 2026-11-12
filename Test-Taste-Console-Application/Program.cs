@@ -1,4 +1,3 @@
-﻿
 using System;
 using System.IO;
 using System.Reflection;
@@ -30,12 +29,18 @@ namespace Test_Taste_Console_Application
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var screenOutputService = serviceProvider.GetService<IOutputService>();
+            var fileOutputService = serviceProvider.GetService<IFileOutputService>();
 
             try
             {
+                Console.WriteLine("Loading Solar System data...");
                 screenOutputService.OutputAllPlanetsAndTheirAverageMoonGravityToConsole();
                 screenOutputService.OutputAllMoonsAndTheirMassToConsole();
                 screenOutputService.OutputAllPlanetsAndTheirMoonsToConsole();
+
+                Console.WriteLine("Processing planets and moons...");
+                Console.WriteLine("Calculating average moon temperatures...");
+                screenOutputService.OutputAllPlanetsAndTheirAverageMoonTemperatureToConsole();
             }
             catch (Exception exception)
             {
@@ -47,6 +52,26 @@ namespace Test_Taste_Console_Application
 
                 System.Diagnostics.Debug.WriteLine(
                     $"{ExceptionMessage.ScreenOutputOperationFailed}{exception.Message}");
+            }
+
+            try
+            {
+                Console.WriteLine("Writing results to file...");
+                if (fileOutputService.OutputAllPlanetsAndTheirAverageMoonTemperatureToFile())
+                {
+                    Console.WriteLine("Operation completed successfully.");
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Instance.Error(
+                    $"{LoggerMessage.FileOutputOperationFailed}{exception.Message}");
+
+                Console.WriteLine(
+                    $"{ExceptionMessage.FileOutputOperationFailed}{exception.Message}");
+
+                System.Diagnostics.Debug.WriteLine(
+                    $"{ExceptionMessage.FileOutputOperationFailed}{exception.Message}");
             }
 
             serviceProvider.Dispose();
@@ -63,6 +88,7 @@ namespace Test_Taste_Console_Application
             serviceCollection.AddHttpClient<HttpClientService>();
             serviceCollection.AddSingleton<IPlanetService, PlanetService>();
             serviceCollection.AddSingleton<IOutputService, ScreenOutputService>();
+            serviceCollection.AddSingleton<IFileOutputService, FileOutputService>();
             serviceCollection.AddSingleton<IMoonService, MoonService>();
         }
     }

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Test_Taste_Console_Application.Domain.DataTransferObjects;
 
 namespace Test_Taste_Console_Application.Domain.Objects
@@ -15,6 +16,33 @@ namespace Test_Taste_Console_Application.Domain.Objects
             get => 0.0f;
         }
 
+        public float? AverageMoonTemperature
+        {
+            get
+            {
+                if (!HasMoons())
+                {
+                    return null;
+                }
+
+                var validMoons = Moons
+                    .Where(moon => moon != null && moon.AvgTemp.HasValue && moon.AvgTemp.Value > 0)
+                    .ToList();
+
+                if (!validMoons.Any())
+                {
+                    return null;
+                }
+
+                return (float)validMoons.Average(moon => moon.AvgTemp.Value);
+            }
+        }
+
+        public Planet()
+        {
+            Moons = new Collection<Moon>();
+        }
+
         public Planet(PlanetDto planetDto)
         {
             Id = planetDto.Id;
@@ -24,7 +52,10 @@ namespace Test_Taste_Console_Application.Domain.Objects
             {
                 foreach (MoonDto moonDto in planetDto.Moons)
                 {
-                    Moons.Add(new Moon(moonDto));
+                    if (moonDto != null)
+                    {
+                        Moons.Add(new Moon(moonDto));
+                    }
                 }
             }
         }

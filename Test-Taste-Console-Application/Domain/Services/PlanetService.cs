@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
@@ -56,8 +56,17 @@ namespace Test_Taste_Console_Application.Domain.Services
                         var moonResponse = _httpClientService.Client
                             .GetAsync(UriPath.GetMoonByIdQueryParameters + moon.URLId)
                             .Result;
+                        if (!moonResponse.IsSuccessStatusCode)
+                        {
+                            Logger.Instance.Warn($"{LoggerMessage.GetRequestFailed}{moonResponse.StatusCode}");
+                            continue;
+                        }
                         var moonContent = moonResponse.Content.ReadAsStringAsync().Result;
-                        newMoonsCollection.Add(JsonConvert.DeserializeObject<MoonDto>(moonContent));
+                        var deserializedMoon = JsonConvert.DeserializeObject<MoonDto>(moonContent);
+                        if (deserializedMoon != null)
+                        {
+                            newMoonsCollection.Add(deserializedMoon);
+                        }
                     }
                     planet.Moons = newMoonsCollection;
 
